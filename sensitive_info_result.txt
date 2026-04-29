@@ -1,3 +1,0 @@
-D:\Repositories\Bits\TraeEditor_Unity\Editor\SolutionProjectEntry.cs, line, 19 have some sensitive information: 2150E333-8FDC-42A3-9474-1A3956D46DE8
-D:\Repositories\Bits\TraeEditor_Unity\Editor\ProjectGeneration\ProjectGeneration.cs, line, 827 have some sensitive information: E097FAD1-6243-4DAD-9C02-E9B9EFC3FFC1
-D:\Repositories\Bits\TraeEditor_Unity\Editor\ProjectGeneration\ProjectGeneration.cs, line, 1064 have some sensitive information: FAE04EC0-301F-11D3-BF4B-00C04F79EFBC

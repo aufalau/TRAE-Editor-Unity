@@ -620,6 +620,8 @@ namespace Microsoft.Unity.VisualStudio.Editor
 			}
 		}
 
+		private const string k_rulesVersionFile = ".rules-version";
+
 		private static void EnsureProjectRules(string projectRoot)
 		{
 			try
@@ -633,7 +635,11 @@ namespace Microsoft.Unity.VisualStudio.Editor
 				var package = UnityEditor.PackageManager.PackageInfo.FindForAssembly(typeof(VisualStudioCodeInstallation).Assembly);
 				if (package == null) return;
 
-				var instructionsDir = IOPath.Combine(package.resolvedPath, "unity-code-style-guide", "UnitySpecificInstructions");
+				var pluginVersion = package.version;
+				var versionFile = IOPath.Combine(rulesDirectory, k_rulesVersionFile);
+				var shouldOverwrite = ShouldOverwriteRules(versionFile, pluginVersion);
+
+				var instructionsDir = IOPath.Combine(package.resolvedPath, "rules~", "unity-code-style-guide", "UnitySpecificInstructions");
 
 				var styleGuideFile = IOPath.Combine(instructionsDir, "UnityCodeStyleInstructions.md");
 				var performanceFile = IOPath.Combine(instructionsDir, "UnityPerformanceOptimizationInstructions.md");
@@ -641,19 +647,77 @@ namespace Microsoft.Unity.VisualStudio.Editor
 				var targetStyleGuideFile = IOPath.Combine(rulesDirectory, "UnityCodeStyleInstructions.md");
 				var targetPerformanceFile = IOPath.Combine(rulesDirectory, "UnityPerformanceOptimizationInstructions.md");
 
-				if (File.Exists(styleGuideFile) && !File.Exists(targetStyleGuideFile))
+				var copied = false;
+
+				if (File.Exists(styleGuideFile) && (!File.Exists(targetStyleGuideFile) || shouldOverwrite))
 				{
-					File.Copy(styleGuideFile, targetStyleGuideFile);
+					File.Copy(styleGuideFile, targetStyleGuideFile, overwrite: true);
+					copied = true;
 				}
 
-				if (File.Exists(performanceFile) && !File.Exists(targetPerformanceFile))
+				if (File.Exists(performanceFile) && (!File.Exists(targetPerformanceFile) || shouldOverwrite))
 				{
-					File.Copy(performanceFile, targetPerformanceFile);
+					File.Copy(performanceFile, targetPerformanceFile, overwrite: true);
+					copied = true;
 				}
+
+				// Write version stamp so we know which version last wrote these rules
+				if (copied)
+				{
+					File.WriteAllText(versionFile, pluginVersion);
+				}
+
+				// Copy PICO XR SDK rules if the package is installed in the project
+				CopyPicoRulesIfNeeded(package.resolvedPath, rulesDirectory, shouldOverwrite);
 			}
 			catch
 			{
 				// do not fail if we cannot copy the rules
+			}
+		}
+
+		private const string k_picoXrPackageName = "com.bytedance.pico.xr";
+
+		private static void CopyPicoRulesIfNeeded(string packageResolvedPath, string rulesDirectory, bool shouldOverwrite)
+		{
+			// Check if PICO XR SDK is installed in the current project
+			var picoPackage = UnityEditor.PackageManager.PackageInfo.FindForPackageName(k_picoXrPackageName);
+			if (picoPackage == null) return;
+
+			var picoRuleSource = IOPath.Combine(packageResolvedPath, "rules~", "pico-unity-sdk", "pico-unity-sdk.md");
+			var picoRuleTarget = IOPath.Combine(rulesDirectory, "pico-unity-sdk.md");
+
+			if (File.Exists(picoRuleSource) && (!File.Exists(picoRuleTarget) || shouldOverwrite))
+			{
+				File.Copy(picoRuleSource, picoRuleTarget, overwrite: true);
+			}
+		}
+
+		/// <summary>
+		/// Determines whether the project rules should be overwritten.
+		/// - Version file missing but rules exist: user-managed, do not overwrite.
+		/// - Version file present and older than current plugin: overwrite.
+		/// - Version file present and equal/newer: skip.
+		/// </summary>
+		private static bool ShouldOverwriteRules(string versionFilePath, string currentVersion)
+		{
+			if (!File.Exists(versionFilePath))
+				return false;
+
+			var stampedVersion = File.ReadAllText(versionFilePath).Trim();
+			if (string.IsNullOrEmpty(stampedVersion))
+				return false;
+
+			try
+			{
+				var stamped = new System.Version(stampedVersion);
+				var current = new System.Version(currentVersion);
+				return current > stamped;
+			}
+			catch
+			{
+				// If version parsing fails, don't overwrite
+				return false;
 			}
 		}
 

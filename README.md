@@ -1,8 +1,8 @@
-# Code Editor Package for Trae IDE
+# Code Editor Package for TRAE IDE
 
-## Using the Trae Editor package
+## Using the TRAE Editor package
 
-To use the package, go to **Edit** > **Preferences** > **External Tools** > **External Script Editor** and select **Trae**. When you select this option, the window reloads and displays settings that control production of .csproj files.
+To use the package, go to **Edit** > **Preferences** > **External Tools** > **External Script Editor** and select **TRAE**. When you select this option, the window reloads and displays settings that control production of .csproj files.
 
 
 ## Generate .csproj files

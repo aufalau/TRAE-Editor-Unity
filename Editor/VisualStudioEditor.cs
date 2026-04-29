@@ -147,7 +147,7 @@ namespace Microsoft.Unity.VisualStudio.Editor
 			EditorGUI.indentLevel--;
 
 			EditorGUILayout.Space();
-			EditorGUILayout.LabelField("Trae:");
+			EditorGUILayout.LabelField("TRAE:");
 			EditorGUI.indentLevel++;
 
 			var autoCopyRules = EditorGUILayout.Toggle(new GUIContent("Auto copy project rules", "Automatically copy UnityCodeStyleInstructions.md and UnityPerformanceOptimizationInstructions.md to .trae/rules directory when opening a project"), TraePreferences.AutoCopyProjectRules);
