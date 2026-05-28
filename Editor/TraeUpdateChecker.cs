@@ -101,7 +101,7 @@ namespace ByteDance.IDE.Trae.Editor
 			operation.completed += _ =>
 			{
 				string version = null;
-				if (request.result == UnityWebRequest.Result.Success)
+				if (request.responseCode == 200)
 				{
 					// Parse "version": "x.y.z" from the JSON without a full JSON parser.
 					var match = Regex.Match(
